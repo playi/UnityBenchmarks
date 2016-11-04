@@ -11,12 +11,15 @@ public class ControllerMain : MonoBehaviour {
   public Text          output;
   public RectTransform buttonContainer;
   public Button        exampleButton;
+  public Button        clearButton;
 
   void Start() {
 
     addButton("Vector Math", onClickCompareVectorMath);
     addButton("foreach()"  , onClickForeach1);
     addButton("for()"      , onClickForeach2);
+
+    clearButton.onClick.AddListener(onClickClear);
 
     outputClear();
     outputLine ("howdy");
@@ -29,6 +32,10 @@ public class ControllerMain : MonoBehaviour {
     btn.transform.SetParent(buttonContainer);
     btn.transform.localPosition = Vector3.zero;
     btn.transform.localScale    = Vector3.one;
+  }
+
+  void onClickClear() {
+    outputClear();
   }
 
   void outputClear() {
@@ -145,14 +152,14 @@ public class ControllerMain : MonoBehaviour {
   }
 
   void onClickForeach1() {
-    StartCoroutine(crTestForeach(1));
+    StartCoroutine(crTestForeach<myClass>(1));
   }
 
   void onClickForeach2() {
-    StartCoroutine(crTestForeach(2));
+    StartCoroutine(crTestForeach<myClass>(2));
   }
 
-  IEnumerator crTestForeach(int method) {
+  IEnumerator crTestForeach<T>(int method) where T:new() {
 
     int   numValues = 10000;
     float numSecs   = 5f;
@@ -160,9 +167,9 @@ public class ControllerMain : MonoBehaviour {
     outputLine("Starting foreach test");
     yield return null;
 
-    float[] values = new float[numValues];
+    T[] values = new T[numValues];
     for (int n = 0; n < numValues; ++n) {
-      values[n] = Random.Range(0f, 1f);
+      values[n] = new T();
     }
 
     float timeStop;
@@ -179,8 +186,8 @@ public class ControllerMain : MonoBehaviour {
       timeStop = Time.realtimeSinceStartup + numSecs;
       fc1a = Time.frameCount;
       while (Time.realtimeSinceStartup < timeStop) {
-        foreach(float f in values) {
-          foreachCore(f);
+        foreach(T val in values) {
+          foreachCore<T>(val);
         }
         yield return null;
       }
@@ -196,7 +203,7 @@ public class ControllerMain : MonoBehaviour {
       fc2a = Time.frameCount;
       while (Time.realtimeSinceStartup < timeStop) {
         for (int n = 0; n < numValues; ++n) {
-          foreachCore(values[n]);
+          foreachCore<T>(values[n]);
         }
         yield return null;
       }
@@ -206,7 +213,7 @@ public class ControllerMain : MonoBehaviour {
     int fps1 = (int)((float)(fc1b - fc1a) / numSecs);
     int fps2 = (int)((float)(fc2b - fc2a) / numSecs);
 
-    outputLine("foreach vs. for, " + numValues + " values each frame for " + numSecs.ToString("0"));
+    outputLine("foreach vs. for, " + numValues + " values each frame for " + numSecs.ToString("0") + " seconds");
     if (method == 1) {
       outputLine("foreach: " + fps1 + " fps");
     }
@@ -220,8 +227,15 @@ public class ControllerMain : MonoBehaviour {
     yield break;
   }
 
-  void foreachCore(float f) {
-    f = f * f;
+  void foreachCore<T>(T obj) where T:new() {
+    if (obj == null) {
+      Debug.Log("unexpected");
+    }
+  }
+
+  class myClass {
+    public int   val1 = 1;
+    public float val2 = 2.3f;
   }
 
 }
