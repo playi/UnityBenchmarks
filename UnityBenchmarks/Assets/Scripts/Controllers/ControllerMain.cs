@@ -2,6 +2,7 @@
 using UnityEngine.Events;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 
 // THIS IS A PUBLIC REPOSITORY!
 // don't reference internal classes.
@@ -16,8 +17,10 @@ public class ControllerMain : MonoBehaviour {
   void Start() {
 
     addButton("Vector Math", onClickCompareVectorMath);
-    addButton("foreach()"  , onClickForeach1);
-    addButton("for()"      , onClickForeach2);
+    addButton("list foreach()"  , onClickForeachList1);
+    addButton("list for()"      , onClickForeachList2);
+    addButton("array foreach()" , onClickForeachArray1);
+    addButton("array for()"     , onClickForeachArray2);
 
     clearButton.onClick.AddListener(onClickClear);
 
@@ -151,23 +154,102 @@ public class ControllerMain : MonoBehaviour {
     yield break;
   }
 
-  void onClickForeach1() {
-    StartCoroutine(crTestForeach<myClass>(1));
+  void onClickForeachList1() {
+    StartCoroutine(crTestForeachList<myClass>(1));
   }
 
-  void onClickForeach2() {
-    StartCoroutine(crTestForeach<myClass>(2));
+  void onClickForeachList2() {
+    StartCoroutine(crTestForeachList<myClass>(2));
   }
 
-  IEnumerator crTestForeach<T>(int method) where T:new() {
+  void onClickForeachArray1() {
+    StartCoroutine(crTestForeachArray<myClass>(1));
+  }
+
+  void onClickForeachArray2() {
+    StartCoroutine(crTestForeachArray<myClass>(2));
+  }
+
+  IEnumerator crTestForeachList<T>(int method) where T:new() {
 
     int   numValues = 10000;
     float numSecs   = 5f;
 
-    outputLine("Starting foreach test");
+    string methodName = (method == 1 ? "foreach" : "for");
+    outputLine(methodName + " test on List<" + typeof(T).Name + ">[" + numValues + "], each frame for " + numSecs.ToString("0") + " s");
+    yield return null;
+
+    List<T>values = new List<T>();
+
+    for (int n = 0; n < numValues; ++n) {
+      values.Add(new T());
+    }
+
+    float timeStop;
+
+    int fc1a = 1;
+    int fc1b = 2;
+    int fc2a = 1;
+    int fc2b = 2;
+
+    if (method == 1) {
+      outputString(".");
+      yield return null;
+
+      timeStop = Time.realtimeSinceStartup + numSecs;
+      fc1a = Time.frameCount;
+      while (Time.realtimeSinceStartup < timeStop) {
+        foreach(T val in values) {
+          foreachCore<T>(val);
+        }
+        yield return null;
+      }
+      fc1b = Time.frameCount;
+    }
+
+    if (method == 2) {
+
+      outputString(".");
+      yield return null;
+
+      timeStop = Time.realtimeSinceStartup + numSecs;
+      fc2a = Time.frameCount;
+      while (Time.realtimeSinceStartup < timeStop) {
+        for (int n = 0; n < numValues; ++n) {
+          foreachCore<T>(values[n]);
+        }
+        yield return null;
+      }
+      fc2b = Time.frameCount;
+    }
+
+    int fps1 = (int)((float)(fc1b - fc1a) / numSecs);
+    int fps2 = (int)((float)(fc2b - fc2a) / numSecs);
+
+    if (method == 1) {
+      outputLine("foreach: " + fps1 + " fps");
+    }
+
+    if (method == 2) {
+      outputLine("for:     " + fps2 + " fps");
+    }
+
+    outputLine("");
+
+    yield break;
+  }
+
+  IEnumerator crTestForeachArray<T>(int method) where T:new() {
+
+    int   numValues = 10000;
+    float numSecs   = 5f;
+
+    string methodName = (method == 1 ? "foreach" : "for");
+    outputLine(methodName + " test on Array<" + typeof(T).Name + ">[" + numValues + "], each frame for " + numSecs.ToString("0") + " s");
     yield return null;
 
     T[] values = new T[numValues];
+
     for (int n = 0; n < numValues; ++n) {
       values[n] = new T();
     }
@@ -226,7 +308,6 @@ public class ControllerMain : MonoBehaviour {
 
     yield break;
   }
-
   void foreachCore<T>(T obj) where T:new() {
     if (obj == null) {
       Debug.Log("unexpected");
