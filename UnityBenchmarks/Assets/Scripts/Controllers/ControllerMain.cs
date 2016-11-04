@@ -30,9 +30,18 @@ public class ControllerMain : MonoBehaviour {
 
     outputClear();
     outputLine ("setting target framerate to " + targetFramerate);
+    outputLine("");
     Application.targetFrameRate = targetFramerate;
 
     StartCoroutine(crFPS());
+  }
+
+  static string fmt(int val) {
+    return val.ToString("N0");
+  }
+
+  static string fmt(float val) {
+    return val.ToString("0");
   }
 
   IEnumerator crFPS() {
@@ -159,11 +168,11 @@ public class ControllerMain : MonoBehaviour {
     float opsPerS3 = numIters / t3;
     float opsPerS4 = numIters / t4;
 
-    outputLine("operations per second, with " + numIters + " iterations.");
-    outputLine("method 1: " + (int)opsPerS1);
-    outputLine("method 2: " + (int)opsPerS2);
-    outputLine("method 3: " + (int)opsPerS3);
-    outputLine("method 4: " + (int)opsPerS4);
+    outputLine("operations per second, with " + fmt(numIters) + " iterations.");
+    outputLine("method 1: " + fmt((int)opsPerS1));
+    outputLine("method 2: " + fmt((int)opsPerS2));
+    outputLine("method 3: " + fmt((int)opsPerS3));
+    outputLine("method 4: " + fmt((int)opsPerS4));
     outputLine("");
 
     /*
@@ -199,7 +208,7 @@ public class ControllerMain : MonoBehaviour {
     float numSecs   = 5f;
 
     string methodName = (method == 1 ? "foreach" : "for");
-    outputLine(methodName + " test on List<" + typeof(T).Name + ">[" + forNumVals + "], each frame for " + numSecs.ToString("0") + " s");
+    outputLine(methodName + " test on List<" + typeof(T).Name + ">[" + fmt(forNumVals) + "], each frame for " + fmt(numSecs) + " s");
     yield return null;
 
     List<T>values = new List<T>();
@@ -267,7 +276,7 @@ public class ControllerMain : MonoBehaviour {
     float numSecs   = 5f;
 
     string methodName = (method == 1 ? "foreach" : "for");
-    outputLine(methodName + " test on Array<" + typeof(T).Name + ">[" + forNumVals + "], each frame for " + numSecs.ToString("0") + " s");
+    outputLine(methodName + " test on Array<" + typeof(T).Name + ">[" + fmt(forNumVals) + "], each frame for " + fmt(numSecs) + " s");
     yield return null;
 
     T[] values = new T[forNumVals];
@@ -317,7 +326,7 @@ public class ControllerMain : MonoBehaviour {
     int fps1 = (int)((float)(fc1b - fc1a) / numSecs);
     int fps2 = (int)((float)(fc2b - fc2a) / numSecs);
 
-    outputLine("foreach vs. for, " + forNumVals + " values each frame for " + numSecs.ToString("0") + " seconds");
+    outputLine("foreach vs. for, " + fmt(forNumVals) + " values each frame for " + fmt(numSecs) + " seconds");
     if (method == 1) {
       outputLine("foreach: " + fps1 + " fps");
     }
