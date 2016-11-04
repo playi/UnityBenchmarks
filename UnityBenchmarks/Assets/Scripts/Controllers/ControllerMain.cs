@@ -13,6 +13,10 @@ public class ControllerMain : MonoBehaviour {
   public RectTransform buttonContainer;
   public Button        exampleButton;
   public Button        clearButton;
+  public Text          fpsText;
+
+  private int          targetFramerate    = 120;
+  private float        fpsMonitorInterval = 0.25f; // seconds
 
   void Start() {
 
@@ -25,7 +29,25 @@ public class ControllerMain : MonoBehaviour {
     clearButton.onClick.AddListener(onClickClear);
 
     outputClear();
-    outputLine ("howdy");
+    outputLine ("setting target framerate to " + targetFramerate);
+    Application.targetFrameRate = targetFramerate;
+
+    StartCoroutine(crFPS());
+  }
+
+  IEnumerator crFPS() {
+    int   frameCount = Time.frameCount;
+    float realtime   = Time.realtimeSinceStartup;
+
+    while (true) {
+      yield return new WaitForSecondsRealtime(fpsMonitorInterval);
+      int   dfc = Time.frameCount - frameCount;
+      float dt  = Time.realtimeSinceStartup - realtime;
+      float fps = (float)dfc / dt;
+      fpsText.text = "fps: " + fps.ToString("000");
+      frameCount = Time.frameCount;
+      realtime   = Time.realtimeSinceStartup;
+    }
   }
 
   void addButton(string label, UnityAction onClick) {
@@ -170,18 +192,19 @@ public class ControllerMain : MonoBehaviour {
     StartCoroutine(crTestForeachArray<myClass>(2));
   }
 
+  private int forNumVals = 1000000;
+
   IEnumerator crTestForeachList<T>(int method) where T:new() {
 
-    int   numValues = 10000;
     float numSecs   = 5f;
 
     string methodName = (method == 1 ? "foreach" : "for");
-    outputLine(methodName + " test on List<" + typeof(T).Name + ">[" + numValues + "], each frame for " + numSecs.ToString("0") + " s");
+    outputLine(methodName + " test on List<" + typeof(T).Name + ">[" + forNumVals + "], each frame for " + numSecs.ToString("0") + " s");
     yield return null;
 
     List<T>values = new List<T>();
 
-    for (int n = 0; n < numValues; ++n) {
+    for (int n = 0; n < forNumVals; ++n) {
       values.Add(new T());
     }
 
@@ -215,7 +238,7 @@ public class ControllerMain : MonoBehaviour {
       timeStop = Time.realtimeSinceStartup + numSecs;
       fc2a = Time.frameCount;
       while (Time.realtimeSinceStartup < timeStop) {
-        for (int n = 0; n < numValues; ++n) {
+        for (int n = 0; n < forNumVals; ++n) {
           foreachCore<T>(values[n]);
         }
         yield return null;
@@ -241,16 +264,15 @@ public class ControllerMain : MonoBehaviour {
 
   IEnumerator crTestForeachArray<T>(int method) where T:new() {
 
-    int   numValues = 10000;
     float numSecs   = 5f;
 
     string methodName = (method == 1 ? "foreach" : "for");
-    outputLine(methodName + " test on Array<" + typeof(T).Name + ">[" + numValues + "], each frame for " + numSecs.ToString("0") + " s");
+    outputLine(methodName + " test on Array<" + typeof(T).Name + ">[" + forNumVals + "], each frame for " + numSecs.ToString("0") + " s");
     yield return null;
 
-    T[] values = new T[numValues];
+    T[] values = new T[forNumVals];
 
-    for (int n = 0; n < numValues; ++n) {
+    for (int n = 0; n < forNumVals; ++n) {
       values[n] = new T();
     }
 
@@ -284,7 +306,7 @@ public class ControllerMain : MonoBehaviour {
       timeStop = Time.realtimeSinceStartup + numSecs;
       fc2a = Time.frameCount;
       while (Time.realtimeSinceStartup < timeStop) {
-        for (int n = 0; n < numValues; ++n) {
+        for (int n = 0; n < forNumVals; ++n) {
           foreachCore<T>(values[n]);
         }
         yield return null;
@@ -295,7 +317,7 @@ public class ControllerMain : MonoBehaviour {
     int fps1 = (int)((float)(fc1b - fc1a) / numSecs);
     int fps2 = (int)((float)(fc2b - fc2a) / numSecs);
 
-    outputLine("foreach vs. for, " + numValues + " values each frame for " + numSecs.ToString("0") + " seconds");
+    outputLine("foreach vs. for, " + forNumVals + " values each frame for " + numSecs.ToString("0") + " seconds");
     if (method == 1) {
       outputLine("foreach: " + fps1 + " fps");
     }
