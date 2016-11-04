@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 using System.Collections;
 
@@ -7,15 +8,27 @@ using System.Collections;
 
 public class ControllerMain : MonoBehaviour {
 
-  public Text   output;
-  public Button btnCompareVectorMath;
+  public Text          output;
+  public RectTransform buttonContainer;
+  public Button        exampleButton;
 
   void Start() {
 
-    btnCompareVectorMath.onClick.AddListener(onClickCompareVectorMath);
+    addButton("Vector Math", onClickCompareVectorMath);
+    addButton("foreach()"  , onClickForeach1);
+    addButton("for()"      , onClickForeach2);
 
     outputClear();
     outputLine ("howdy");
+  }
+
+  void addButton(string label, UnityAction onClick) {
+    Button btn = Instantiate<Button>(exampleButton);
+    btn.GetComponentInChildren<Text>().text = label;
+    btn.onClick.AddListener(onClick);
+    btn.transform.SetParent(buttonContainer);
+    btn.transform.localPosition = Vector3.zero;
+    btn.transform.localScale    = Vector3.one;
   }
 
   void outputClear() {
@@ -43,7 +56,7 @@ public class ControllerMain : MonoBehaviour {
     outputLine("starting test CompareVectorMath");
     yield return null;
 
-    int numIters = 30000000;
+    int numIters = 20000000;
 
     float[] scalars = new float[numIters];
     for (int n = 0; n < numIters; ++n) {
@@ -119,6 +132,7 @@ public class ControllerMain : MonoBehaviour {
     outputLine("method 2: " + (int)opsPerS2);
     outputLine("method 3: " + (int)opsPerS3);
     outputLine("method 4: " + (int)opsPerS4);
+    outputLine("");
 
     /*
     method 1: 27581670
@@ -127,6 +141,87 @@ public class ControllerMain : MonoBehaviour {
     method 4: 61806856
     */
 
+    yield break;
+  }
+
+  void onClickForeach1() {
+    StartCoroutine(crTestForeach(1));
+  }
+
+  void onClickForeach2() {
+    StartCoroutine(crTestForeach(2));
+  }
+
+  IEnumerator crTestForeach(int method) {
+
+    int   numValues = 10000;
+    float numSecs   = 5f;
+
+    outputLine("Starting foreach test");
+    yield return null;
+
+    float[] values = new float[numValues];
+    for (int n = 0; n < numValues; ++n) {
+      values[n] = Random.Range(0f, 1f);
+    }
+
+    float timeStop;
+
+    int fc1a = 1;
+    int fc1b = 2;
+    int fc2a = 1;
+    int fc2b = 2;
+
+    if (method == 1) {
+      outputString(".");
+      yield return null;
+
+      timeStop = Time.realtimeSinceStartup + numSecs;
+      fc1a = Time.frameCount;
+      while (Time.realtimeSinceStartup < timeStop) {
+        foreach(float f in values) {
+          foreachCore(f);
+        }
+        yield return null;
+      }
+      fc1b = Time.frameCount;
+    }
+
+    if (method == 2) {
+
+      outputString(".");
+      yield return null;
+
+      timeStop = Time.realtimeSinceStartup + numSecs;
+      fc2a = Time.frameCount;
+      while (Time.realtimeSinceStartup < timeStop) {
+        for (int n = 0; n < numValues; ++n) {
+          foreachCore(values[n]);
+        }
+        yield return null;
+      }
+      fc2b = Time.frameCount;
+    }
+
+    int fps1 = (int)((float)(fc1b - fc1a) / numSecs);
+    int fps2 = (int)((float)(fc2b - fc2a) / numSecs);
+
+    outputLine("foreach vs. for, " + numValues + " values each frame for " + numSecs.ToString("0"));
+    if (method == 1) {
+      outputLine("foreach: " + fps1 + " fps");
+    }
+
+    if (method == 2) {
+      outputLine("for:     " + fps2 + " fps");
+    }
+
+    outputLine("");
+
+    yield break;
+  }
+
+  void foreachCore(float f) {
+    f = f * f;
   }
 
 }
