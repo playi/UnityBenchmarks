@@ -2,8 +2,10 @@
 using UnityEngine.UI;
 using System.Collections;
 
-public class ControllerMain : MonoBehaviour {
+// THIS IS A PUBLIC REPOSITORY!
+// don't reference internal classes.
 
+public class ControllerMain : MonoBehaviour {
 
   public Text   output;
   public Button btnCompareVectorMath;
